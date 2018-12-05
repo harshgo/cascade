@@ -1232,8 +1232,6 @@ inline void BitsBase<T, BT, ST>::bitwise_sll_const(size_t samt, BitsBase& res) c
   // This algorithm works from highest to lowest order, one word at a time
   // word: The current word we're looking at
   // top/bottom: The words that will be shifted into word; word can equal top
-
-  // How many words ahead is bottom?
   const auto delta = (samt + bits_per_word() - 1) / bits_per_word();
   // How many bits are we taking from bottom and shifting top?
   const auto bamt = samt % bits_per_word();
@@ -1297,8 +1295,15 @@ inline void BitsBase<T, BT, ST>::bitwise_sxr_const(size_t samt, bool arith, Bits
     }
   }
   // There's one more block to build where top is implicitly zero
+  int num_left = bits_per_word() - idx - 1;
   if (hob) {
-    res.val_[w++] = (bamt == 0) ? T(-1) : ((val_.back() >> bamt) | (mask << mamt));
+    std::cout << "val_ back " << val_.back() << std::endl;
+    int64_t v = val_.back(); // val_ is not signed
+    v = (v << num_left) >> num_left; // shifting left into sign bit and then back
+    std::cout << "v " << v << " v >> bamt " << (v >> bamt) << std::endl;
+    std::cout << "val_.back() << >> " << ((val_.back() << num_left) >> num_left) << std::endl;
+    res.val_[w++] = (bamt == 0) ? T(-1) : ((v >> bamt) | (mask << mamt));
+    std::cout << "res " << res.val_[w] << std::endl;
   } else {
     res.val_[w++] = (bamt == 0) ? T(0) : (val_.back() >> bamt);
   }
